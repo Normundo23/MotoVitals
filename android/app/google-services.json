@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674008353456",
+    "project_id": "moto-vitals",
+    "storage_bucket": "moto-vitals.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674008353456:android:5aed38dc4d2441bf610975",
+        "android_client_info": {
+          "package_name": "com.denni.moto_vitals"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDH7fZ3Z-0z3PUyGrH3Z7qfstJUSN_VKTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
