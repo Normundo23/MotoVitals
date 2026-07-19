@@ -9,34 +9,35 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: HealthRing(
-              currentOdo: 2000.0,
+              currentOdo: 1800.0,
               lastOilChangeOdo: 1000.0,
-              serviceInterval: 2000.0, // Defaults to 2000, 1000 driven = 50%
+              serviceInterval: 2000.0, // Used: 800. Remaining: 1200 (60%)
             ),
           ),
         ),
       );
 
-      // Distance driven = 1000. Progress = 1000/2000 = 0.5 (50.0%)
-      expect(find.text('50.0%'), findsOneWidget);
-      expect(find.text('1000 / 2000 km'), findsOneWidget);
+      expect(find.text('60%'), findsOneWidget);
+      expect(find.text('1200 km left'), findsOneWidget);
+      expect(find.text('Good'), findsOneWidget);
     });
 
-    testWidgets('Renders correct percentage text (overdue clamps to 100%)', (WidgetTester tester) async {
+    testWidgets('Renders correct percentage text (overdue clamps to 0%)', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
             body: HealthRing(
               currentOdo: 4000.0,
               lastOilChangeOdo: 1000.0,
-              serviceInterval: 2000.0, // Distance driven = 3000. Progress clamps to 1.0 (100.0%)
+              serviceInterval: 2000.0, // Used: 3000. Remaining: 0 (0%)
             ),
           ),
         ),
       );
 
-      expect(find.text('100.0%'), findsOneWidget);
-      expect(find.text('3000 / 2000 km'), findsOneWidget);
+      expect(find.text('0%'), findsOneWidget);
+      expect(find.text('0 km left'), findsOneWidget);
+      expect(find.text('Overdue!'), findsOneWidget);
     });
 
     testWidgets('Renders correct percentage text (new oil)', (WidgetTester tester) async {
@@ -46,14 +47,15 @@ void main() {
             body: HealthRing(
               currentOdo: 1000.0,
               lastOilChangeOdo: 1000.0,
-              serviceInterval: 2000.0, // Distance driven = 0. Progress = 0.0%
+              serviceInterval: 2000.0, // Used: 0. Remaining: 2000 (100%)
             ),
           ),
         ),
       );
 
-      expect(find.text('0.0%'), findsOneWidget);
-      expect(find.text('0 / 2000 km'), findsOneWidget);
+      expect(find.text('100%'), findsOneWidget);
+      expect(find.text('2000 km left'), findsOneWidget);
+      expect(find.text('Good'), findsOneWidget);
     });
   });
 }

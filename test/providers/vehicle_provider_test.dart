@@ -3,41 +3,70 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:moto_vitals/models/part.dart';
 import 'package:moto_vitals/models/vehicle.dart';
+import 'package:moto_vitals/models/service_log.dart';
+import 'package:moto_vitals/models/build_post.dart';
+import 'package:moto_vitals/models/fuel_log.dart';
 import 'package:moto_vitals/providers/vehicle_provider.dart';
 import 'package:moto_vitals/services/database_service.dart';
 
 class MockDatabaseService implements DatabaseService {
   Vehicle? lastSavedVehicle;
-  final StreamController<Vehicle?> _vehicleStreamController = StreamController<Vehicle?>.broadcast();
+  final StreamController<List<Vehicle>> _vehiclesStreamController = StreamController<List<Vehicle>>.broadcast();
 
-  void emitVehicle(Vehicle? vehicle) {
-    _vehicleStreamController.add(vehicle);
+  void emitVehicles(List<Vehicle> vehicles) {
+    _vehiclesStreamController.add(vehicles);
   }
 
   void emitError(String error) {
-    _vehicleStreamController.addError(error);
+    _vehiclesStreamController.addError(error);
   }
 
   @override
-  Stream<Vehicle?> get userVehicleStream => _vehicleStreamController.stream;
+  Stream<List<Vehicle>> get userVehiclesStream => _vehiclesStreamController.stream;
 
   @override
   Future<void> saveVehicle(Vehicle vehicle) async {
     lastSavedVehicle = vehicle;
-    // Simulate updating the stream after save
-    emitVehicle(vehicle);
+    emitVehicles([vehicle]);
   }
 
   @override
   String? get currentUserId => 'test_uid';
 
   @override
-  Future<List<Part>> getPartsPaginated({int limit = 10, DocumentSnapshot<Object?>? lastDocument}) {
-    throw UnimplementedError();
+  Future<void> addServiceLog(ServiceLog log) async {}
+
+  @override
+  Stream<List<ServiceLog>> serviceLogStream(String vehicleId) => Stream.value([]);
+
+  @override
+  Future<void> addFuelLog(FuelLog log) async {}
+
+  @override
+  Stream<List<FuelLog>> fuelLogStream(String vehicleId) => Stream.value([]);
+
+  @override
+  Future<GalleryPage> getBuildPostsPaginated({int limit = 10, DocumentSnapshot? lastDocument}) async {
+    return const GalleryPage(posts: []);
   }
 
   @override
-  Future<QuerySnapshot<Object?>> getRawPartDocuments({int limit = 10, DocumentSnapshot<Object?>? lastDocument}) {
+  Future<void> createBuildPost(BuildPost post) async {}
+
+  @override
+  Future<void> toggleLike(String postId, bool isLiked) async {}
+
+  @override
+  Future<bool> hasLiked(String postId) async => false;
+
+  @override
+  Future<void> deleteBuildPost(String postId) async {}
+
+  @override
+  Future<List<Part>> getPartsByIds(List<String> ids) async => [];
+
+  @override
+  Future<QuerySnapshot> getRawPartDocuments({int limit = 10, DocumentSnapshot? lastDocument}) {
     throw UnimplementedError();
   }
 }
@@ -70,7 +99,7 @@ void main() {
       // Give stream time to attach
       await Future.delayed(Duration.zero);
       
-      mockDb.emitVehicle(testVehicle);
+      mockDb.emitVehicles([testVehicle]);
       
       // Wait for provider to process stream
       await Future.delayed(const Duration(milliseconds: 50));
@@ -95,7 +124,7 @@ void main() {
       );
 
       await Future.delayed(Duration.zero);
-      mockDb.emitVehicle(testVehicle);
+      mockDb.emitVehicles([testVehicle]);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(() => provider.updateOdometer(-50.0), throwsException);
@@ -112,7 +141,7 @@ void main() {
       );
 
       await Future.delayed(Duration.zero);
-      mockDb.emitVehicle(testVehicle);
+      mockDb.emitVehicles([testVehicle]);
       await Future.delayed(const Duration(milliseconds: 50));
 
       await provider.updateOdometer(1200.0);

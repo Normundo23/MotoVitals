@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/maintenance_part.dart';
 import '../providers/vehicle_provider.dart';
 import '../widgets/health_ring.dart';
+import 'fuel/fuel_tracker_screen.dart';
+import 'garage/garage_selector_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   /// Callback to switch to the Marketplace tab (index 1) in MainLayout.
@@ -15,6 +17,7 @@ class DashboardScreen extends StatelessWidget {
   void _showOdometerUpdateSheet(BuildContext context, double currentOdo) {
     final controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
 
     showModalBottomSheet(
       context: context,
@@ -25,7 +28,6 @@ class DashboardScreen extends StatelessWidget {
       ),
       builder: (_) => StatefulBuilder(
         builder: (ctx, setSheetState) {
-          bool isSaving = false;
           return Padding(
             padding: EdgeInsets.only(
               left: 24,
@@ -72,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
                       labelText: 'New Odometer Reading',
                       labelStyle: const TextStyle(color: Colors.white54),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
+                      fillColor: Colors.white.withValues(alpha: 0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -189,7 +191,7 @@ class DashboardScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: Text('Vitals Dashboard', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+            title: const GarageSelectorWidget(),
           ),
           floatingActionButton: vehicle != null
               ? FloatingActionButton.extended(
@@ -235,7 +237,28 @@ class DashboardScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 16),
+
+                    // Spec badge
+                    Builder(builder: (ctx) {
+                      if (vehicle.specModelId == null) return const SizedBox.shrink();
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurpleAccent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.deepPurpleAccent.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.verified_rounded, size: 13, color: Colors.deepPurpleAccent),
+                          const SizedBox(width: 5),
+                          Text('Spec-matched intervals',
+                              style: GoogleFonts.inter(color: Colors.deepPurpleAccent, fontSize: 12, fontWeight: FontWeight.w500)),
+                        ]),
+                      );
+                    }),
+
+                    const SizedBox(height: 44),
 
                     if (primaryPart != null) ...[
                       Center(
@@ -246,14 +269,29 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: () => _showLogServiceDialog(context, primaryPart, currentOdo),
-                        icon: const Icon(Icons.build_circle_outlined, color: Colors.deepPurpleAccent, size: 18),
-                        label: Text('Log Oil Change', style: GoogleFonts.inter(color: Colors.deepPurpleAccent, fontWeight: FontWeight.w600)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.deepPurpleAccent),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _showLogServiceDialog(context, primaryPart, currentOdo),
+                            icon: const Icon(Icons.build_circle_outlined, color: Colors.deepPurpleAccent, size: 18),
+                            label: Text('Log Oil Change', style: GoogleFonts.inter(color: Colors.deepPurpleAccent, fontWeight: FontWeight.w600)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.deepPurpleAccent),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FuelTrackerScreen())),
+                            icon: const Icon(Icons.local_gas_station_rounded, color: Colors.white, size: 18),
+                            label: Text('Fuel', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurpleAccent,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
 
@@ -293,7 +331,7 @@ class DashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A24),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +346,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: healthPercentage,
-            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(healthColor),
             minHeight: 8,
             borderRadius: BorderRadius.circular(4),
@@ -358,7 +396,7 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.two_wheeler, size: 80, color: Colors.white.withOpacity(0.2)),
+            Icon(Icons.two_wheeler, size: 80, color: Colors.white.withValues(alpha: 0.2)),
             const SizedBox(height: 24),
             Text('Your garage is empty', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 8),

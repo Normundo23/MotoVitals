@@ -1,7 +1,16 @@
 name: moto_vitals
-description: A new Flutter project tracking vehicle vitals.
+description: A motorcycle health and diagnostics app for Filipino riders.
 publish_to: 'none'
 
+# ── Versioning strategy ─────────────────────────────────────────────────────
+# Format: MAJOR.MINOR.PATCH+BUILD
+# MAJOR: breaking data schema changes
+# MINOR: new features (backwards compatible)
+# PATCH: bug fixes
+# BUILD: auto-incremented on every Play Store upload
+#
+# Update this before every release:
+#   flutter build appbundle --build-name=1.1.0 --build-number=3
 version: 1.0.0+1
 
 environment:
@@ -10,18 +19,63 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cloud_firestore: ^4.15.8 # Always use latest or suitable versions in actual execution
-  firebase_auth: ^4.17.8
-  firebase_storage: ^11.6.0
-  google_fonts: ^6.2.1
-  url_launcher: ^6.2.4
-  cached_network_image: ^3.3.1
+
+  # Firebase core
   firebase_core: ^2.32.0
+  firebase_auth: ^4.17.8
+  cloud_firestore: ^4.15.8
+  firebase_storage: ^11.6.0
+
+  # Remote config — feature flags without redeploying
+  firebase_remote_config: ^4.4.5
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+
+  # Navigation / linking
+  url_launcher: ^6.2.4
+  share_plus: ^7.2.1
+
+  # State
   provider: ^6.1.5+1
+
+  # Version info — read app version at runtime for update checks
+  package_info_plus: ^8.0.0
+
+  # Local storage
+  shared_preferences: ^2.2.2
+
+  # Notifications
+  flutter_local_notifications: ^16.3.0
+  timezone: ^0.9.2
+
+  # Haptic feedback
+  vibration: ^1.8.4
+
+  # File operations
+  path_provider: ^2.1.2
+  permission_handler: ^11.2.0
+  intl: ^0.20.2
+  google_generative_ai: ^0.4.7
+  pdf: ^3.12.0
+  printing: ^5.13.1
+  google_maps_flutter: ^2.14.2
+  flutter_dotenv: ^6.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  mockito: any
+  mocktail: any
+  fake_cloud_firestore: any
+  firebase_auth_mocks: any
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env
+

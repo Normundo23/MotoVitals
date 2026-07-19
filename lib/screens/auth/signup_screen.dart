@@ -108,7 +108,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     labelText: 'Email',
                     labelStyle: GoogleFonts.poppins(color: Colors.white54),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -126,7 +126,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     labelText: 'Password',
                     labelStyle: GoogleFonts.poppins(color: Colors.white54),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -143,7 +143,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     labelText: 'Confirm Password',
                     labelStyle: GoogleFonts.poppins(color: Colors.white54),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,

@@ -9,9 +9,13 @@ class Vehicle {
   final String make;
   final VehicleModelType modelType;
   final String modelName;
-  final double odo; // current odometer reading
+  final double odo;
   final DateTime? purchaseDate;
   final List<MaintenancePart> parts;
+
+  /// Links to VehicleSpecDatabase.findById() for spec-aware maintenance.
+  /// Null means the user picked "Other / not listed".
+  final String? specModelId;
 
   Vehicle({
     required this.id,
@@ -22,6 +26,7 @@ class Vehicle {
     required this.odo,
     this.purchaseDate,
     this.parts = const [],
+    this.specModelId,
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json, String documentId) {
@@ -35,13 +40,14 @@ class Vehicle {
       ),
       modelName: json['modelName'] as String? ?? '',
       odo: (json['odo'] as num?)?.toDouble() ?? 0.0,
-      purchaseDate: json['purchaseDate'] != null 
-          ? (json['purchaseDate'] as Timestamp).toDate() 
+      purchaseDate: json['purchaseDate'] != null
+          ? (json['purchaseDate'] as Timestamp).toDate()
           : null,
       parts: (json['parts'] as List<dynamic>?)
               ?.map((e) => MaintenancePart.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      specModelId: json['specModelId'] as String?,
     );
   }
 
@@ -52,8 +58,10 @@ class Vehicle {
       'modelType': modelType.name,
       'modelName': modelName,
       'odo': odo,
-      'purchaseDate': purchaseDate != null ? Timestamp.fromDate(purchaseDate!) : null,
+      'purchaseDate':
+          purchaseDate != null ? Timestamp.fromDate(purchaseDate!) : null,
       'parts': parts.map((e) => e.toJson()).toList(),
+      'specModelId': specModelId,
     };
   }
 }

@@ -1,26 +1,46 @@
 import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
 import '../models/maintenance_part.dart';
+import '../models/service_log.dart';
 import '../services/database_service.dart';
 
 class VehicleProvider extends ChangeNotifier {
   final DatabaseService _db;
-  Vehicle? _currentVehicle;
+  List<Vehicle> _vehicles = [];
+  String? _selectedVehicleId;
   bool _isLoading = true;
   String? _error;
 
-  Vehicle? get currentVehicle => _currentVehicle;
+  List<Vehicle> get vehicles => _vehicles;
+  
+  Vehicle? get currentVehicle {
+    if (_vehicles.isEmpty) return null;
+    if (_selectedVehicleId != null) {
+      try {
+        return _vehicles.firstWhere((v) => v.id == _selectedVehicleId);
+      } catch (_) {
+        return _vehicles.first;
+      }
+    }
+    return _vehicles.first;
+  }
+
   bool get isLoading => _isLoading;
   String? get error => _error;
 
   VehicleProvider({DatabaseService? db}) : _db = db ?? DatabaseService() {
-    _listenToVehicle();
+    _listenToVehicles();
   }
 
-  void _listenToVehicle() {
-    _db.userVehicleStream.listen(
-      (vehicle) {
-        _currentVehicle = vehicle;
+  void selectVehicle(String id) {
+    _selectedVehicleId = id;
+    notifyListeners();
+  }
+
+  void _listenToVehicles() {
+    _db.userVehiclesStream.listen(
+      (vehicles) {
+        _vehicles = vehicles;
         _isLoading = false;
         _error = null;
         notifyListeners();
@@ -33,42 +53,42 @@ class VehicleProvider extends ChangeNotifier {
     );
   }
 
-  /// Updates the odometer reading. New odo must be >= current odo.
+  /// Updates odometer reading. Must be >= current odo.
   Future<void> updateOdometer(double newOdo) async {
-    if (_currentVehicle == null) return;
+    final vehicle = currentVehicle;
+    if (vehicle == null) return;
     if (newOdo <= 0) throw Exception("Odometer must be positive.");
-    if (newOdo < _currentVehicle!.odo) {
+    if (newOdo < vehicle.odo) {
       throw Exception(
-          "New odometer cannot be less than current odometer (${_currentVehicle!.odo.toStringAsFixed(0)} km).");
+          "New odometer cannot be less than current (${vehicle.odo.toStringAsFixed(0)} km).");
     }
 
     final updatedVehicle = Vehicle(
-      id: _currentVehicle!.id,
-      ownerId: _currentVehicle!.ownerId,
-      make: _currentVehicle!.make,
-      modelType: _currentVehicle!.modelType,
-      modelName: _currentVehicle!.modelName,
+      id: vehicle.id,
+      ownerId: vehicle.ownerId,
+      make: vehicle.make,
+      modelType: vehicle.modelType,
+      modelName: vehicle.modelName,
       odo: newOdo,
-      purchaseDate: _currentVehicle!.purchaseDate,
-      parts: _currentVehicle!.parts, // Odo update does not reset part service
+      purchaseDate: vehicle.purchaseDate,
+      parts: vehicle.parts,
+      specModelId: vehicle.specModelId,
     );
 
     await _db.saveVehicle(updatedVehicle);
-    // The stream will automatically update _currentVehicle
   }
 
-  /// Logs a service for a specific part by resetting its lastServiceOdo
-  /// to the current odometer reading. This is the Digital Service Logbook entry.
-  ///
-  /// [partName] must match the part's name exactly.
-  Future<void> logService(String partName) async {
-    if (_currentVehicle == null) return;
+  /// Logs a service for a part:
+  /// 1. Resets the part's lastServiceOdo on the vehicle doc
+  /// 2. Writes a ServiceLog entry to the serviceLogs subcollection
+  Future<void> logService(String partName, {String? notes}) async {
+    final vehicle = currentVehicle;
+    if (vehicle == null) return;
 
-    final currentOdo = _currentVehicle!.odo;
+    final currentOdo = vehicle.odo;
 
-    final updatedParts = _currentVehicle!.parts.map((part) {
+    final updatedParts = vehicle.parts.map((part) {
       if (part.name == partName) {
-        // Reset lastServiceOdo to current odometer — part is now "fresh"
         return MaintenancePart(
           name: part.name,
           interval: part.interval,
@@ -79,17 +99,28 @@ class VehicleProvider extends ChangeNotifier {
     }).toList();
 
     final updatedVehicle = Vehicle(
-      id: _currentVehicle!.id,
-      ownerId: _currentVehicle!.ownerId,
-      make: _currentVehicle!.make,
-      modelType: _currentVehicle!.modelType,
-      modelName: _currentVehicle!.modelName,
+      id: vehicle.id,
+      ownerId: vehicle.ownerId,
+      make: vehicle.make,
+      modelType: vehicle.modelType,
+      modelName: vehicle.modelName,
       odo: currentOdo,
-      purchaseDate: _currentVehicle!.purchaseDate,
+      purchaseDate: vehicle.purchaseDate,
       parts: updatedParts,
+      specModelId: vehicle.specModelId,
     );
 
     await _db.saveVehicle(updatedVehicle);
-    // Stream will update UI automatically
+
+    // Write to Digital Service Logbook subcollection
+    final log = ServiceLog(
+      id: '',
+      vehicleId: vehicle.id,
+      partName: partName,
+      odoAtService: currentOdo,
+      serviceDate: DateTime.now(),
+      notes: notes,
+    );
+    await _db.addServiceLog(log);
   }
 }
