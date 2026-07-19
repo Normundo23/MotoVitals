@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create placeholder .env
+        run: echo "GEMINI_API_KEY=" > .env
+
       - name: Build APK
         run: flutter build apk --release
 
