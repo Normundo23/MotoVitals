@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.denni.moto_vitals"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
